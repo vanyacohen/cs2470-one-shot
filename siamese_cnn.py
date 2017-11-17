@@ -6,6 +6,7 @@ imgSz = 105
 
 imgBatchA = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
 imgBatchB = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
+label = tf.placeholder(tf.float32, [bSz])
 
 def cnn(imgBatch):
     conv1 = tf.layers.conv2d(
