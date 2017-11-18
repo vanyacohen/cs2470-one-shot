@@ -3,10 +3,11 @@ import tensorflow as tf
 
 bSz = 128
 imgSz = 105
+learning_rate = 1e-4
 
 imgBatchA = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
 imgBatchB = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
-label = tf.placeholder(tf.float32, [bSz])
+labels = tf.placeholder(tf.float32, [bSz, 1])
 
 def cnn(imgBatch):
     conv1 = tf.layers.conv2d(
@@ -42,7 +43,15 @@ def cnn(imgBatch):
     return feature_vector
 
 L1_distance_vector = tf.abs(tf.subtract(cnn(imgBatchA), cnn(imgBatchB)))
-logits = tf.layers.dense(inputs=L1_distance_vector, units=1, activation=tf.nn.sigmoid)
+logits = tf.layers.dense(inputs=L1_distance_vector, units=1)
+loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=logits))
+train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
+
+for i in xrange(100):
+    imgs = np.ones((bSz, imgSz, imgSz, 1))
+    y = np.ones((bSz, 1))
+    _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs, imgBatchB : imgs, labels: y})
+    print l
