@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-bSz = 128
+bSz = 16
 imgSz = 105
 learning_rate = 1e-4
 
@@ -50,7 +50,7 @@ train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-for i in xrange(100):
+for i in xrange(10):
     imgs = np.ones((bSz, imgSz, imgSz, 1))
     y = np.ones((bSz, 1))
     _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs, imgBatchB : imgs, labels: y})
