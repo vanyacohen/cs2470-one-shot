@@ -89,4 +89,7 @@ def get_data(num, trans_num, step):
 			a_y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 			pairs.append([a_x, a_y])
 			labels.append(label)
+	zipped = list(zip(pairs, labels))
+	rand.shuffle(zipped)
+	pairs, labels = zip(*zipped)
 	return (pairs, labels)
