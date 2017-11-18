@@ -16,19 +16,19 @@ def affine_transformation(img, theta, rho_x, rho_y, s_x, s_y, t_x, t_y):
 		y_len, x_len = out.shape
 		if x_len > 105:
 			x_dif = x_len - 105
-			out = out[:,m.ceil(x_dif / 2):m.ceil(x_len - x_dif / 2)]
+			out = out[:,int(m.ceil(x_dif / 2.0)):int(m.ceil(x_len - x_dif / 2.0))]
 		else:
 			x_dif = 105 - x_len
 			temp = np.ones((y_len,105))
-			temp[:,m.ceil(x_dif / 2):m.ceil(105 - x_dif / 2)] = out
+			temp[:,int(m.ceil(x_dif / 2.0)):int(m.ceil(105 - x_dif / 2.0))] = out
 			out = temp
 		if y_len > 105:
 			y_dif = y_len - 105
-			out = out[m.ceil(y_dif / 2):m.ceil(y_len - y_dif / 2),:]
+			out = out[int(m.ceil(y_dif / 2.0)):int(m.ceil(y_len - y_dif / 2.0)),:]
 		else:
 			y_dif = 105 - y_len
 			temp = np.ones((105,105))
-			temp[m.ceil(y_dif / 2):m.ceil(105 - y_dif / 2),:] = out
+			temp[int(m.ceil(y_dif / 2.0)):int(m.ceil(105 - y_dif / 2.0)),:] = out
 			out = temp
 		if out.shape != (105, 105):
 			print(out.shape)
@@ -58,7 +58,7 @@ def get_data(num, trans_num, step):
 		alpha_ub = 20
 		img_lb = 16
 		img_ub = 20
-	alphabets = os.listdir('images_background')
+	alphabets = os.listdir(base)
 	for i in range(num):
 		alph1 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
 		characters1 = os.listdir(alph1)

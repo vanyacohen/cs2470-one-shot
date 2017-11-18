@@ -51,22 +51,20 @@ train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-train_pairs, train_labels = dp.get_data(30000, 8, 'train')
-test_pairs, test_labels = dp.get_data(10000, 0, 'test')
-vali_pairs, vali_labels = dp.get_data(10000, 0, 'validate')
+train_pairs, train_labels = dp.get_data(3000, 8, 'train')
+#test_pairs, test_labels = dp.get_data(10000, 0, 'test')
+#vali_pairs, vali_labels = dp.get_data(10000, 0, 'validate')
 
-
-for i in xrange(30000 // bSz):
-    imgs1 = None
-    imgs2 = None
-    for j in range(i*128, (i+1)*128):
+print "doing nn stuff"
+for i in xrange(3000 // bSz):
+    imgs1 = []
+    imgs2 = []
+    for j in range(i*bSz, (i+1)*bSz):
         pair = train_pairs[j]
-        if imgs1 == None:
-            imgs1 = pair[0]
-            imgs2 = pair[1]
-        else:
-            imgs1 = np.concatenate((imgs1, pair[0]), 2)
-            imgs2 = np.concatenate((imgs2, pair[1]), 2)
-    y = train_labels[i*128,(i+1)*128]
+        imgs1 += [pair[0]]
+        imgs2 += [pair[1]]
+    imgs1 = np.array(imgs1).reshape(bSz, imgSz, imgSz, 1)
+    imgs2 = np.array(imgs2).reshape(bSz, imgSz, imgSz, 1)
+    y = np.array(train_labels[i*bSz:(i+1)*bSz]).reshape(bSz, 1)
     _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs1, imgBatchB : imgs2, labels: y})
     print l
