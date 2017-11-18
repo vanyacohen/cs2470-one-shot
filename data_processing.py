@@ -37,22 +37,30 @@ def affine_transformation(img, theta, rho_x, rho_y, s_x, s_y, t_x, t_y):
 		out = cv2.warpAffine(out,M,(cols,rows),borderValue=1.0)
 	return out
 
-def get_data(num, trans_num, training):
+def get_data(num, trans_num, step):
 	pairs = []
 	labels = []
-	if training:
+	if step == 'train':
 		base = 'images_background'
-		alpha_num = 30
+		alpha_lb = 0
+		alpha_ub = 30
 		img_lb = 0
 		img_ub = 12
-	else:
+	elif step == 'test':
 		base = 'images_evaluation'
-		alpha_num = 30
+		alpha_lb = 0
+		alpha_ub = 10
 		img_lb = 12
 		img_ub = 16
+	else:
+		base = 'images_evaluation'
+		alpha_lb = 10
+		alpha_ub = 20
+		img_lb = 16
+		img_ub = 20
 	alphabets = os.listdir('images_background')
 	for i in range(num):
-		alph1 = os.path.join(base, alphabets[rand.randint(0,alpha_num - 1)])
+		alph1 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
 		characters1 = os.listdir(alph1)
 		char1 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
 		images1 = os.listdir(char1)
@@ -66,7 +74,7 @@ def get_data(num, trans_num, training):
 			y = cv2.imread(img2,0) / 255
 		else:
 			label = 0
-			alph2 = os.path.join(base, alphabets[rand.randint(0,alpha_num - 1)])
+			alph2 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
 			characters2 = os.listdir(alph2)
 			char2 = os.path.join(alph2, characters2[rand.randint(0,len(characters2) - 1)])
 			while char2 == char1:

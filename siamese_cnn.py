@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
+import data_processing as dp
 
-bSz = 16
+bSz = 128
 imgSz = 105
 learning_rate = 1e-4
 
@@ -50,8 +51,22 @@ train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-for i in xrange(10):
-    imgs = np.ones((bSz, imgSz, imgSz, 1))
-    y = np.ones((bSz, 1))
-    _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs, imgBatchB : imgs, labels: y})
+train_pairs, train_labels = dp.get_data(30000, 8, 'train')
+test_pairs, test_labels = dp.get_data(10000, 0, 'test')
+vali_pairs, vali_labels = dp.get_data(10000, 0, 'validate')
+
+
+for i in xrange(30000 // bSz):
+    imgs1 = None
+    imgs2 = None
+    for j in range(i*128, (i+1)*128):
+        pair = train_pairs[j]
+        if imgs1 == None:
+            imgs1 = pair[0]
+            imgs2 = pair[1]
+        else:
+            imgs1 = np.concatenate((imgs1, pair[0]), 2)
+            imgs2 = np.concatenate((imgs2, pair[1]), 2)
+    y = train_labels[i*128,(i+1)*128]
+    _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs1, imgBatchB : imgs2, labels: y})
     print l
