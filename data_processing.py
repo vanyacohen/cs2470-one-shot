@@ -103,17 +103,13 @@ def get_test_data():
 	img_lb = 12
 	img_ub = 16
 	alphabets = os.listdir(base)
-	for i in range(alpha_ub, alpha_lb):
+	for i in range(alpha_lb, alpha_ub):
 		alpha = os.path.join(base, alphabets[i])
 		characters = os.listdir(alpha)
-		drawers = range(img_lb, img_ub)
+		drawers = list(range(img_lb, img_ub))
 		for j in range(2):
-			d_ind = rand.randint(0,len(drawers) - 1)
-			drawer1 = drawers[d_ind]
-			del drawers[d_ind]
-			d_ind = rand.randint(0,len(drawers) - 1)
-			drawer2 = drawers[d_ind]
-			del drawers[d_ind]
+			drawer1 = drawers.pop(rand.randint(0,len(drawers) - 1))
+			drawer2 = drawers.pop(rand.randint(0,len(drawers) - 1))
 			for k in range(20):
 				char1 = os.path.join(alpha, characters[k])
 				images1 = os.listdir(char1)
@@ -126,9 +122,9 @@ def get_test_data():
 					y = cv2.imread(img2,0) / 255
 					pairs.append([x, y])
 					if k == l:
-						pairs.append(1)
+						labels.append(1)
 					else:
-						pairs.append(0)
+						labels.append(0)
 	zipped = list(zip(pairs, labels))
 	rand.shuffle(zipped)
 	pairs, labels = zip(*zipped)
