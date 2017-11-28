@@ -46,12 +46,12 @@ def get_data(num, trans_num, step):
 		alpha_ub = 30
 		img_lb = 0
 		img_ub = 12
-	elif step == 'test':
-		base = 'images_evaluation'
-		alpha_lb = 0
-		alpha_ub = 10
-		img_lb = 12
-		img_ub = 16
+	#elif step == 'test':
+	#	base = 'images_evaluation'
+	#	alpha_lb = 0
+	#	alpha_ub = 10
+	#	img_lb = 12
+	#	img_ub = 16
 	else:
 		base = 'images_evaluation'
 		alpha_lb = 10
@@ -92,4 +92,40 @@ def get_data(num, trans_num, step):
 	#zipped = list(zip(pairs, labels))
 	#rand.shuffle(zipped)
 	#pairs, labels = zip(*zipped)
+	return (pairs, labels)
+
+def get_test_data():
+	pairs = []
+	labels = []
+	base = 'images_evaluation'
+	alpha_lb = 0
+	alpha_ub = 10
+	img_lb = 12
+	img_ub = 16
+	alphabets = os.listdir(base)
+	for i in range(alpha_lb, alpha_ub):
+		alpha = os.path.join(base, alphabets[i])
+		characters = os.listdir(alpha)
+		drawers = list(range(img_lb, img_ub))
+		for j in range(2):
+			drawer1 = drawers.pop(rand.randint(0,len(drawers) - 1))
+			drawer2 = drawers.pop(rand.randint(0,len(drawers) - 1))
+			for k in range(20):
+				char1 = os.path.join(alpha, characters[k])
+				images1 = os.listdir(char1)
+				for l in range(20):
+					char2 = os.path.join(alpha, characters[l])
+					images2 = os.listdir(char2)
+					img1 = os.path.join(char1, images1[drawer1])
+					img2 = os.path.join(char2, images2[drawer2])
+					x = cv2.imread(img1,0) / 255
+					y = cv2.imread(img2,0) / 255
+					pairs.append([x, y])
+					if k == l:
+						labels.append(1)
+					else:
+						labels.append(0)
+	zipped = list(zip(pairs, labels))
+	rand.shuffle(zipped)
+	pairs, labels = zip(*zipped)
 	return (pairs, labels)
