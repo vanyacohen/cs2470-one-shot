@@ -129,3 +129,69 @@ def get_test_data():
 	rand.shuffle(zipped)
 	pairs, labels = zip(*zipped)
 	return (pairs, labels)
+
+def get_data_paths(num, trans_num, step):
+	pairs = []
+	labels = []
+	if step == 'train':
+		base = 'images_background'
+		alpha_lb = 0
+		alpha_ub = 30
+		img_lb = 0
+		img_ub = 12
+	else:
+		base = 'images_evaluation'
+		alpha_lb = 10
+		alpha_ub = 20
+		img_lb = 16
+		img_ub = 20
+	alphabets = os.listdir(base)
+	for i in range(num):
+		alph1 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
+		characters1 = os.listdir(alph1)
+		char1 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
+		images1 = os.listdir(char1)
+		img1 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+		x = img1
+		if rand.uniform(0,2) > 1:
+			label = 1
+			img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+			while img2 == img1:
+				img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+			y = img2
+		else:
+			label = 0
+			alph2 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
+			characters2 = os.listdir(alph2)
+			char2 = os.path.join(alph2, characters2[rand.randint(0,len(characters2) - 1)])
+			while char2 == char1:
+				char2 = os.path.join(alph2, characters2[rand.randint(0,len(characters2) - 1)])
+			images2 = os.listdir(char2)
+			img2 = os.path.join(char2, images2[rand.randint(img_lb,img_ub - 1)])
+			y = img2
+		pairs.append([x, y, False])
+		labels.append(label)
+		for j in range(trans_num):
+			pairs.append([x, y, True])
+			labels.append(label)
+	zipped = list(zip(pairs, labels))
+	rand.shuffle(zipped)
+	pairs, labels = zip(*zipped)
+	return (pairs, labels)
+
+def get_image_pair(pair):
+	img1 = pair[0]
+	img2 = pair[1]
+	trans = pair[2]
+	x = cv2.imread(img1,0) / 255
+	y = cv2.imread(img2,0) / 255
+	if trans:
+		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+		y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+	return (x, y)
+
+def get_image(img_path, trans):
+	x = cv2.imread(img_path,0) / 255
+	if trans:
+		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+	return x
