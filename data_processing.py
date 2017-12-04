@@ -142,7 +142,7 @@ def get_mnist_test_data():
 	num_inds = [[], [], [], [], [], [], [], [], [], []]
 	for i in range(len(anss)):
 		num_inds[np.argmax(anss[i,:])].append(i)
-	for i in range(80):
+	for i in range(40):
 		for j in range(10):
 			x_ind = num_inds[j].pop(rand.randint(0,len(num_inds[j]) - 1))
 			for k in range(10):
