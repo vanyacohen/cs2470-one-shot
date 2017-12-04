@@ -1,4 +1,7 @@
 import cv2, os, math as m, numpy as np, random as rand
+from tensorflow.examples.tutorials.mnist import input_data
+
+
 
 def affine_transformation(img, theta, rho_x, rho_y, s_x, s_y, t_x, t_y):
 	out = img
@@ -130,6 +133,32 @@ def get_test_data():
 	pairs, labels = zip(*zipped)
 	return (pairs, labels)
 
+def get_mnist_test_data():
+	pairs = []
+	labels = []
+	mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+	imgs = mnist.train.images
+	anss = mnist.train.labels
+	num_inds = [[], [], [], [], [], [], [], [], [], []]
+	for i in range(len(anss)):
+		num_inds[np.argmax(anss[i,:])].append(i)
+	for i in range(80):
+		for j in range(10):
+			x_ind = num_inds[j].pop(rand.randint(0,len(num_inds[j]) - 1))
+			for k in range(10):
+				y_ind = num_inds[k].pop(rand.randint(0,len(num_inds[k]) - 1))
+				x = cv2.resize(imgs[x_ind,:].reshape(28, 28), (35, 35))
+				y = cv2.resize(imgs[y_ind,:].reshape(28, 28), (35, 35))
+				pairs.append([x, y])
+				if j == k:
+					labels.append(1)
+				else:
+					labels.append(0)
+	zipped = list(zip(pairs, labels))
+	rand.shuffle(zipped)
+	pairs, labels = zip(*zipped)
+	return (pairs, labels)
+
 def get_data_paths(num, trans_num, step):
 	pairs = []
 	labels = []
@@ -188,6 +217,19 @@ def get_image_pair(pair):
 	if trans:
 		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 		y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+	return (x, y)
+
+def get_image_pair_mnist(pair):
+	img1 = pair[0]
+	img2 = pair[1]
+	trans = pair[2]
+	x = cv2.imread(img1,0) / 255
+	y = cv2.imread(img2,0) / 255
+	if trans:
+		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+		x = cv2.resize(x, (35, 35))
+		y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
+		y = cv2.resize(y, (35, 35))
 	return (x, y)
 
 def get_image(img_path, trans):
