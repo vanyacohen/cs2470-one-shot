@@ -2,10 +2,10 @@ import numpy as np
 import tensorflow as tf
 import data_processing as dp
 
-bSz = 128
+bSz = 8
 imgSz = 105
 learning_rate = 1e-4
-trainingSz = 30000
+trainingSz = 150000
 
 imgBatchA = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
 imgBatchB = tf.placeholder(tf.float32, [bSz, imgSz, imgSz, 1])
@@ -52,10 +52,11 @@ train = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
+saver = tf.train.Saver()
 
 print('Building Data')
 train_pairs, train_labels = dp.get_data_paths(trainingSz, 8, 'train')
-#test_pairs, test_labels = dp.get_data(10000, 0, 'test')
+test_pairs, test_labels = dp.get_data(10000, 0, 'test')
 #vali_pairs, vali_labels = dp.get_data(10000, 0, 'validate')
 
 print("doing nn stuff")
@@ -66,7 +67,7 @@ for e in xrange(50):
         imgs1 = []
         imgs2 = []
         for j in range(i*bSz, (i+1)*bSz):
-            pair = get_image_pair(train_pairs[j])
+            pair = dp.get_image_pair(train_pairs[j])
             imgs1 += [pair[0]]
             imgs2 += [pair[1]]
         imgs1 = np.array(imgs1).reshape(bSz, imgSz, imgSz, 1)
@@ -75,3 +76,22 @@ for e in xrange(50):
         _, l = sess.run([train, loss], feed_dict={imgBatchA : imgs1, imgBatchB : imgs2, labels: y})
         sumL += l
     print(e, sumL)
+
+save_path = saver.save(sess, "../tmp/model2.ckpt")
+#saver.restore(sess, "/tmp/model2.ckpt")
+
+accs = []
+for i in xrange(10000 // bSz):
+    imgs1 = []
+    imgs2 = []
+    for j in range(i*bSz, (i+1)*bSz):
+        pair = test_pairs[j]
+        imgs1 += [pair[0]]
+        imgs2 += [pair[1]]
+    imgs1 = np.array(imgs1).reshape(bSz, imgSz, imgSz, 1)
+    imgs2 = np.array(imgs2).reshape(bSz, imgSz, imgSz, 1)
+    y = np.array(test_labels[i*bSz:(i+1)*bSz]).reshape(bSz, 1)
+    a = sess.run(accuracy, feed_dict={imgBatchA : imgs1, imgBatchB : imgs2, labels: y})
+    accs.append(a)
+    #print a
+print sum(accs) / len(accs)
