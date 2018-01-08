@@ -1,6 +1,6 @@
 import cv2, os, math as m, numpy as np, random as rand
 from tensorflow.examples.tutorials.mnist import input_data
-
+import psutil
 
 
 def affine_transformation(img, theta, rho_x, rho_y, s_x, s_y, t_x, t_y):
@@ -68,13 +68,13 @@ def get_data(num, trans_num, step):
 		char1 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
 		images1 = os.listdir(char1)
 		img1 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
-		x = cv2.imread(img1,0) / 255
+		x = cv2.imread(img1,0) / 255.0
 		if rand.uniform(0,2) > 1:
 			label = 1
 			img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
 			while img2 == img1:
 				img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
-			y = cv2.imread(img2,0) / 255
+			y = cv2.imread(img2,0) / 255.0
 		else:
 			label = 0
 			alph2 = os.path.join(base, alphabets[rand.randint(alpha_lb,alpha_ub - 1)])
@@ -84,7 +84,7 @@ def get_data(num, trans_num, step):
 				char2 = os.path.join(alph2, characters2[rand.randint(0,len(characters2) - 1)])
 			images2 = os.listdir(char2)
 			img2 = os.path.join(char2, images2[rand.randint(img_lb,img_ub - 1)])
-			y = cv2.imread(img2,0) / 255
+			y = cv2.imread(img2,0) / 255.0
 		pairs.append([x, y])
 		labels.append(label)
 		for j in range(trans_num):
@@ -92,9 +92,9 @@ def get_data(num, trans_num, step):
 			a_y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 			pairs.append([a_x, a_y])
 			labels.append(label)
-	#zipped = list(zip(pairs, labels))
-	#rand.shuffle(zipped)
-	#pairs, labels = zip(*zipped)
+	# zipped = list(zip(pairs, labels))
+	# rand.shuffle(zipped)
+	# pairs, labels = zip(*zipped)
 	return (pairs, labels)
 
 def get_test_data():
@@ -121,16 +121,17 @@ def get_test_data():
 					images2 = os.listdir(char2)
 					img1 = os.path.join(char1, images1[drawer1])
 					img2 = os.path.join(char2, images2[drawer2])
-					x = cv2.imread(img1,0) / 255
-					y = cv2.imread(img2,0) / 255
+					x = cv2.imread(img1,0) / 255.0
+					y = cv2.imread(img2,0) / 255.0
 					pairs.append([x, y])
-					if k == l:
-						labels.append(1)
-					else:
-						labels.append(0)
-	zipped = list(zip(pairs, labels))
-	rand.shuffle(zipped)
-	pairs, labels = zip(*zipped)
+					# if k == l:
+					# 	labels.append(1)
+					# else:
+					# 	labels.append(0)
+					labels.append(k)
+	# zipped = list(zip(pairs, labels))
+	# rand.shuffle(zipped)
+	# pairs, labels = zip(*zipped)
 	return (pairs, labels)
 
 def get_mnist_test_data():
@@ -212,8 +213,8 @@ def get_image_pair(pair):
 	img1 = pair[0]
 	img2 = pair[1]
 	trans = pair[2]
-	x = cv2.imread(img1,0) / 255
-	y = cv2.imread(img2,0) / 255
+	x = cv2.imread(img1,0) / 255.0
+	y = cv2.imread(img2,0) / 255.0
 	if trans:
 		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 		y = affine_transformation(y, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
@@ -223,8 +224,8 @@ def get_image_pair_mnist(pair):
 	img1 = pair[0]
 	img2 = pair[1]
 	trans = pair[2]
-	x = cv2.imread(img1,0) / 255
-	y = cv2.imread(img2,0) / 255
+	x = cv2.imread(img1,0) / 255.0
+	y = cv2.imread(img2,0) / 255.0
 	if trans:
 		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 		x = cv2.resize(x, (35, 35))
@@ -233,7 +234,47 @@ def get_image_pair_mnist(pair):
 	return (x, y)
 
 def get_image(img_path, trans):
-	x = cv2.imread(img_path,0) / 255
+	x = cv2.imread(img_path,0) / 255.0
 	if trans:
 		x = affine_transformation(x, rand.uniform(-10,10), rand.uniform(-0.3,0.3), rand.uniform(-0.3,0.3), rand.uniform(0.8,1.2), rand.uniform(0.8,1.2), rand.uniform(-2,2), rand.uniform(-2,2))
 	return x
+
+def get_data_paths2(num, trans_num, step, match_rate):
+	pairs = []
+	labels = []
+	if step == 'train':
+		base = 'images_background'
+		img_lb = 0
+		img_ub = 12
+	alphabets = os.listdir(base)
+	for a_ind in range(30):
+		alph1 = os.path.join(base, alphabets[a_ind])
+		for i in range(num // 30):
+			characters1 = os.listdir(alph1)
+			char1 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
+			images1 = os.listdir(char1)
+			img1 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+			x = img1
+			if rand.uniform(0,1) > (1 - match_rate):
+				label = 1
+				img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+				while img2 == img1:
+					img2 = os.path.join(char1, images1[rand.randint(img_lb,img_ub - 1)])
+				y = img2
+			else:
+				label = 0
+				char2 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
+				while char2 == char1:
+					char2 = os.path.join(alph1, characters1[rand.randint(0,len(characters1) - 1)])
+				images2 = os.listdir(char2)
+				img2 = os.path.join(char2, images2[rand.randint(img_lb,img_ub - 1)])
+				y = img2
+			pairs.append([x, y, False])
+			labels.append(label)
+			for j in range(trans_num):
+				pairs.append([x, y, True])
+				labels.append(label)
+	zipped = list(zip(pairs, labels))
+	rand.shuffle(zipped)
+	pairs, labels = zip(*zipped)
+	return (pairs, labels)
